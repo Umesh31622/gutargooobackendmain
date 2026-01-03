@@ -1,0 +1,123 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Progress Tracker</title>
+</head>
+<body>
+  <h2>Watch the video</h2>
+  <video id="videoPlayer" width="640" height="360" controls>
+    <source src="your-video-url.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <script>
+    const video = document.getElementById('videoPlayer');
+    const videoId = '68173966efec4a7655c9b324'; // Replace with real video ID from DB
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2N2ZjMGI2Yzc2YmFkMmExMmYzMTNhYTYiLCJlbWFpbCI6InJhdHJhc3VuaWRoaTZAZ21haWwuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NDY0NDEyMDQsImV4cCI6MTc0NzA0NjAwNH0.XxLH4VLDfMxUzNhZgvvl7K3TlAi0EhAd81TlhBWO8NI'; // Replace with user's actual auth token
+
+    let hasSent = false;
+
+    video.addEventListener('timeupdate', async () => {
+      const currentTime = video.currentTime;
+      const duration = video.duration;
+
+      const watchedPercentage = (currentTime / duration) * 100;
+
+      // Send update every 5 seconds or when >= 30% viewed
+      if (!hasSent && watchedPercentage >= 30) {
+        hasSent = true;
+
+        try {
+          const response = await fetch('http://localhost:9000/api/users/track-video-progress', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              videoId,
+              currentTime,
+              duration
+            })
+          });
+
+          const data = await response.json();
+          console.log('Progress tracked:', data);
+        } catch (error) {
+          console.error('Error sending progress:', error);
+        }
+      }
+    });
+  </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Progress Tracker</title>
+</head>
+<body>
+  <h2>Watch the video</h2>
+  <video id="videoPlayer" width="640" height="360" controls>
+    <source id="videoSource" src="" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <script>
+    const video = document.getElementById('videoPlayer');
+    const videoSource = document.getElementById('videoSource');
+    const videoId = '68173966efec4a7655c9b324'; // Replace with real ID
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiI2N2ZjMGI2Yzc2YmFkMmExMmYzMTNhYTYiLCJlbWFpbCI6InJhdHJhc3VuaWRoaTZAZ21haWwuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NDY0NDEyMDQsImV4cCI6MTc0NzA0NjAwNH0.XxLH4VLDfMxUzNhZgvvl7K3TlAi0EhAd81TlhBWO8NI';
+
+    // 1. Fetch video URL
+    fetch(`http://localhost:9000/api/users/video-url/${videoId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.videoUrl) {
+          videoSource.src = data.videoUrl;
+          video.load();
+        } else {
+          alert('Video not found or URL missing.');
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching video URL:', err);
+      });
+
+    let hasSent = false;
+
+    video.addEventListener('timeupdate', async () => {
+      const currentTime = video.currentTime;
+      const duration = video.duration;
+
+      const watchedPercentage = (currentTime / duration) * 100;
+
+      if (!hasSent && watchedPercentage >= 30) {
+        hasSent = true;
+
+        try {
+          const response = await fetch('http://localhost:9000/api/users/track-video-progress', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              videoId,
+              currentTime,
+              duration
+            })
+          });
+
+          const data = await response.json();
+          console.log('Progress tracked:', data);
+        } catch (error) {
+          console.error('Error sending progress:', error);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
