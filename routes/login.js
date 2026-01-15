@@ -1,4 +1,3 @@
-
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User  = require("../models/User");
@@ -60,7 +59,7 @@ router.post('/register', async (req, res) => {
 
     // Generate OTP (for email or mobile)
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
     
 
     const generateReferralCode = async () => {

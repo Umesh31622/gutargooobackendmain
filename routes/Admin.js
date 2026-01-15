@@ -313,137 +313,6 @@ router.post("/verify-signup-otp", async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
-// ✅ Sign Up Admin (only email)
-// both were working fine
-// router.post('/signup', async (req, res) => {
-//   try {
-//     const { email } = req.body;
-
-//     let existingAdmin = await Admin.findOne({ email });
-//     if (existingAdmin) {
-//       return res.status(400).json({ message: 'Admin already exists' });
-//     }
-
-//     // Generate OTP and its expiry
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
-
-//     // Create new Admin with OTP
-//     const newAdmin = new Admin({
-//       email,
-//       otp,
-//       otpExpiry
-//     });
-
-//     await newAdmin.save();
-
-//     // Send OTP via email
-//     await sendOTPEmail(email, otp);
-
-//     res.status(201).json({ message: 'Admin signed up successfully, OTP sent to email' });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Server error', error: err.message });
-//   }
-// });
-// // verify sign up otp
-//   router.post('/verify-otp', async (req, res) => {
-//     try {
-//       const { email, otp } = req.body;
-
-//       const admin = await Admin.findOne({ email });
-//       if (!admin) {
-//         return res.status(404).json({ message: 'Admin not found' });
-//       }
-
-//       if (admin.otp !== otp || admin.otpExpiry < new Date()) {
-//         return res.status(400).json({ message: 'Invalid or expired OTP' });
-//       }
-
-//       admin.otp = null;
-//       admin.otpExpiry = null;
-//       await admin.save();
-
-//       const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET, {
-//         expiresIn: '7d',
-//       });
-
-//       res.status(200).json({
-//         message: 'Login successful',
-//         token,
-//         admin: {
-//           id: admin._id,
-//           email: admin.email,
-//         },
-//       });
-//     } catch (err) {
-//       res.status(500).json({ message: 'Server error', error: err.message });
-//     }
-//   });
-// router.post('/signup', async (req, res) => {
-//   try {
-//     const { email } = req.body;
-
-//     const existingAdmin = await Admin.findOne({ email });
-//     if (existingAdmin) {
-//       return res.status(400).json({ message: 'Admin already exists' });
-//     }
-
-//     // Generate OTP and expiry
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//     const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 mins
-
-//     // Store in session
-//     req.session.signupData = {
-//       email,
-//       otp,
-//       otpExpiry,
-//     };
-
-//     await sendOTPEmail(email, otp);
-
-//     res.status(200).json({ message: 'OTP sent to email. Please verify to complete signup.' });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Server error', error: err.message });
-//   }
-// });
-// router.post('/verify-signup-otp', async (req, res) => {
-//   try {
-//     const { otp } = req.body;
-//     const signupData = req.session.signupData;
-//     console.log(signupData)
-//     if (!signupData) {
-//       return res.status(400).json({ message: 'Session expired or no OTP request found' });
-//     }
-
-//     if (signupData.otp !== otp || Date.now() > signupData.otpExpiry) {
-//       return res.status(400).json({ message: 'Invalid or expired OTP' });
-//     }
-
-//     // Create the admin
-//     const newAdmin = new Admin({ email: signupData.email });
-//     await newAdmin.save();
-
-//     // Clear the session
-//     req.session.signupData = null;
-
-//     // Generate token
-//     const token = jwt.sign({ id: newAdmin._id, role: newAdmin.role }, process.env.JWT_SECRET, {
-//       expiresIn: '7d',
-//     });
-
-//     res.status(201).json({
-//       message: 'Signup successful',
-//       token,
-//       admin: {
-//         id: newAdmin._id,
-//         email: newAdmin.email,
-//       },
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Server error', error: err.message });
-//   }
-// });
-// ✅ Step 1: Login - Send OTP
 router.post("/login", async (req, res) => {
   try {
     const { email } = req.body;
@@ -525,42 +394,6 @@ router.put("/set-price-per-view", verifyAdmin, async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-// // add type
-// router.post("/add_type", verifyAdmin, async (req, res) => {
-//   try {
-//     console.log(req.body);
-//     let { name, type, status = 1 } = req.body;
-//     console.log(req.body);
-//     if (!name || typeof type !== "number") {
-//       return res
-//         .status(400)
-//         .json({ message: "Missing required fields: name or type" });
-//     }
-//     // Normalize name to lowercase
-//     name = name.toLowerCase();
-
-//     // Check if type with same name already exists (case-insensitive)
-//     const existingType = await Type.findOne({
-//       name: { $regex: `^${name}$`, $options: "i" },
-//     });
-//     if (existingType) {
-//       return res
-//         .status(400)
-//         .json({ message: "Type already exists with this name" });
-//     }
-
-//     const newType = new Type({ name, type, status });
-//     await newType.save();
-
-//     return res.status(201).json({
-//       message: "Type added successfully",
-//       data: newType,
-//     });
-//   } catch (error) {
-//     console.error("Error adding type:", error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// });
 router.post("/add_type", verifyAdmin, async (req, res) => {
   try {
     let { name, type, status = 1 } = req.body;
@@ -899,89 +732,6 @@ router.get("/videos/language/:languageId", async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
-// Alternative: More efficient approach using aggregation
-// router.get("/videos/language/:languageId", async (req, res) => {
-//   try {
-//     const { languageId } = req.params;
-//     const { type } = req.query;
-
-//     console.log("Language ID:", languageId);
-//     console.log("Content Type:", type);
-
-//     const typeMapping = {
-//       'movie': { model: Video },
-//       'tvshow': { model: TVShow },
-//       'webseries': { model: Series},
-//       'video': { model: Video },
-//     };
-
-//     // If `type` is specified, fetch only from that model
-//     if (type) {
-//       const mapped = typeMapping[type.toLowerCase()];
-//       if (!mapped) {
-//         return res.status(400).json({
-//           message: "Invalid content type. Supported types: movie, tvshow, webseries, video"
-//         });
-//       }
-
-//       const items = await mapped.model.find({ language_id: languageId }).populate("language_id");
-
-//       if (!items.length) {
-//         return res.status(404).json({ message: `No ${type}s found for this language` });
-//       }
-
-//       return res.status(200).json({
-//         message: `${type.charAt(0).toUpperCase() + type.slice(1)}s fetched successfully`,
-//         languageId,
-//         contentType: type,
-//         totalCount: items.length,
-//         data: items.map(v => ({ ...v.toObject(), contentType: mapped.type })),
-//       });
-//     }
-
-//     // If no type is specified, fetch from all models
-//     const [videos, series, tvShows] = await Promise.all([
-//       Video.find({ language_id: languageId }).populate("language_id"),
-//       Series.find({ language_id: languageId }).populate("language_id"),
-//       TVShow.find({ language_id: languageId }).populate("language_id"),
-//     ]);
-
-//     if (!videos.length && !series.length && !tvShows.length) {
-//       return res.status(404).json({ message: "No content found for this language" });
-//     }
-
-//     const groupedContent = {
-//       movies: [],
-//       webSeries: [],
-//       tvShows: [],
-//       videos: [],
-//     };
-
-//     videos.forEach(v => {
-//       const contentType = v.video_type;
-//       const videoObj = { ...v.toObject(), contentType };
-//       if (contentType === 'movie') groupedContent.movies.push(videoObj);
-//       else if (contentType === 'video') groupedContent.videos.push(videoObj);
-//     });
-
-//     series.forEach(s => groupedContent.webSeries.push({ ...s.toObject(), contentType: 'web_series' }));
-//     tvShows.forEach(t => groupedContent.tvShows.push({ ...t.toObject(), contentType: 'tv_show' }));
-
-//     return res.status(200).json({
-//       message: "All content fetched successfully",
-//       languageId,
-//       contentType: 'all',
-//       totalCount: videos.length + series.length + tvShows.length,
-//       data: groupedContent,
-//     });
-
-//   } catch (error) {
-//     console.error("Error fetching content by language:", error);
-//     return res.status(500).json({ message: "Internal Server Error" });
-//   }
-// });
-
-// Alternative: If you want to check what video_types exist in your database
 router.get("/videos/types/:languageId", async (req, res) => {
   try {
     const { languageId } = req.params;
@@ -1051,21 +801,7 @@ router.get("/get_languages", async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
-// router.get('/get_cast', async (req, res) => {
-//   try {
-//     const languages = await Cast.find().sort({ name: 1 }); // Optional sorting by name
 
-//     return res.status(200).json({
-//       message: 'Cast fetched successfully',
-//       data: languages
-//     });
-//   } catch (error) {
-//     console.error('Error fetching Cast:', error);
-//     return res.status(500).json({ message: 'Internal Server Error' });
-//   }
-// });
-// Update a category
-// not tested
 router.put(
   "/:id",
   upload.single("icon"),
@@ -1293,51 +1029,7 @@ router.get("/get-vendors", async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
-//   // add cast
-// router.post('/add-cast', verifyAdmin, upload.single('image'), async (req, res) => {
-//     try {
-//       const { name, type } = req.body;
-//       const file = req.file;
 
-//       if (!name || !type) {
-//         return res.status(400).json({ message: "Name and type are required" });
-//       }
-
-//       if (!file) {
-//         return res.status(400).json({ message: "Image file is required" });
-//       }
-
-//       const imageUrl = await uploadToCloudinary(file.buffer, "image", file.mimetype);
-
-//       if (!imageUrl) {
-//         return res.status(500).json({ message: "Cloudinary upload failed", error: "No URL returned" });
-//       }
-
-//       const newCast = new Cast({
-//         name,
-//         type,
-//         image: imageUrl
-//       });
-
-//       const savedCast = await newCast.save();
-//       res.status(201).json({ message: "Cast member added successfully", cast: savedCast });
-
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).json({ message: "Server error", error: err.message });
-//     }
-//   });
-
-//   // get cast
-// router.get('/get-casts', async (req, res) => {
-//     try {
-//       const casts = await Cast.find();
-//       res.status(200).json({ casts });
-//     } catch (err) {
-//       res.status(500).json({ message: 'Server error', error: err.message });
-//     }
-//   });
-// GET /vendors/count
 router.get('/vendors/count', async (req, res) => {
   try {
     const vendorCount = await Vendor.countDocuments({});
@@ -1354,22 +1046,6 @@ router.get('/vendors/count', async (req, res) => {
     });
   }
 });
-// get admin users
-// router.get("/admin/users", verifyAdmin, async (req, res) => {
-//   try {
-//     const users = await User.find({ deleted: false }).select(
-//       "profileImage fullName username email mobile createdAt"
-//     );
-//     res.status(200).json({ users });
-//   } catch (error) {
-//     console.error("Error fetching users:", error);
-//     res.status(500).json({ message: "Failed to fetch users" });
-//   }
-// });
-// const router = require('express').Router();
-// const User = require('../models/User');
-
-// Get all users for admin dashboard
 router.get("/users", verifyAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
