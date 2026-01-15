@@ -10,7 +10,7 @@ const connectDB = require("./utils/db");
 // ROUTES
 const admin = require("./routes/Admin");
 const users = require("./routes/User");
-const vendors = require("./routes/Vendor");
+const vendors = require("./routes/Vendor"); 
 const dynamic = require("./routes/Dynamic");
 const section = require("./routes/Section");
 const operatorRoutes = require("./routes/operatorRoutes");
