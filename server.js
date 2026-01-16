@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -14,6 +15,7 @@ const Dynamic = require("./routes/Dynamic");
 const section = require("./routes/Section");
 const operatorRoutes = require("./routes/operatorRoutes");
 
+
 // MODELS
 const Transaction = require("./models/Transactions");
 
@@ -26,13 +28,13 @@ const PORT = process.env.PORT || 9000;
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "https://gutargooplusbackend.onrender.com",
-  "https://gutargoooplus.vercel.app"
+  "https://gutargooplusbackend.onrender.com"
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true); // Postman / server calls
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     return callback(new Error("CORS not allowed"));
@@ -44,34 +46,37 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use("/api/operator", operatorRoutes);
 /* ===============================
-   HEALTH ROUTES
+   ROOT & HEALTH ROUTES
 ================================ */
 app.get("/", (req, res) => {
-  res.status(200).json({
-    status: "GutargooPlus Backend Running 🚀",
-    timestamp: new Date(),
-    uptime: process.uptime()
+  res.json({
+    status: "GutargooPlus Backend is running 🚀",
+    uptime: process.uptime(),
+    timestamp: new Date()
   });
 });
 
-app.get("/health", (req, res) => res.status(200).send("OK"));
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 /* ===============================
-   CONNECT DATABASE
+   DATABASE CONNECT
 ================================ */
 connectDB();
 
 /* ===============================
-   CRON JOBS START (AFTER DB)
+   START CRON JOBS (AFTER DB READY)
 ================================ */
 let cronStarted = false;
 
 mongoose.connection.once("open", () => {
   if (cronStarted) return;
   cronStarted = true;
-  console.log("✅ MongoDB Connected — Starting Cron");
+
+  console.log("✅ DB ready, starting cron jobs");
 
   require("./cron/autoStartContests");
   require("./cron/withdrawalNotifier");
@@ -85,23 +90,9 @@ app.use("/api/admin", admin);
 app.use("/api/vendors", vendors);
 app.use("/api/common", Dynamic);
 app.use("/api/sections", section);
-app.use("/api/operator", operatorRoutes);
 
 /* ===============================
-   TRANSACTIONS API
-================================ */
-app.get("/api/transactions", async (req, res) => {
-  try {
-    const transactions = await Transaction.find({});
-    res.status(200).json({ success: true, data: transactions });
-  } catch (error) {
-    console.error("Transaction Error:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
-  }
-});
-
-/* ===============================
-   STATIC TEST FILES
+   TEST / STATIC FILES
 ================================ */
 app.get("/testing", (req, res) => {
   res.sendFile(path.join(__dirname, "testing.html"));
@@ -120,8 +111,28 @@ app.get("/ads", (req, res) => {
 });
 
 /* ===============================
-   START SERVER
+   TRANSACTIONS API
+================================ */
+app.get("/api/transactions", async (req, res) => {
+  try {
+    const transactions = await Transaction.find({});
+    res.status(200).json({
+      success: true,
+      message: "Transactions fetched successfully",
+      data: transactions
+    });
+  } catch (error) {
+    console.error("Transaction error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+});
+
+/* ===============================
+   SERVER START
 ================================ */
 app.listen(PORT, () => {
-  console.log(`🚀 Server Running on PORT: ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
